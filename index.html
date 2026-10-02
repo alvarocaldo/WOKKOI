@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wokkoi — Modelo de Programación Lineal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#121013;
+    --bg-soft:#1a1713;
+    --panel:#211d19;
+    --panel-2:#28221d;
+    --line: rgba(243,238,228,0.10);
+    --line-strong: rgba(243,238,228,0.18);
+    --cream:#f3eee4;
+    --muted:#b3a99b;
+    --muted-2:#8a8074;
+    --orange:#f5a623;
+    --orange-deep:#e8791e;
+    --blue:#5b9bd5;
+    --blue-deep:#3e7cb1;
+    --green:#7cb87f;
+    --green-deep:#4f8f52;
+    --red:#d97a68;
+    --red-deep:#b45746;
+    --bun:#e3a95f;
+    --bun-deep:#c98842;
+    --meat:#6b3f2a;
+    --cheese:#f3c94a;
+    --lettuce:#8fb35a;
+    --tomato:#c1503e;
+    --sausage:#a4573f;
+    --fry:#f0b429;
+    --radius:2px;
+    --radius-card:18px;
+    --radius-img:14px;
+    --radius-pill:999px;
+    --shadow-card: 0 24px 60px -20px rgba(0,0,0,0.55);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--cream);
+    font-family:'Inter', sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--orange); color:#1a1713; }
+
+  h1,h2,h3,.display{
+    font-family:'Anton', sans-serif;
+    font-weight:400;
+    letter-spacing:0.01em;
+    line-height:1.02;
+    text-transform:uppercase;
+    margin:0;
+  }
+  .accent-script{
+    font-family:'Caveat', cursive;
+    font-weight:600;
+    color:var(--orange);
+  }
+  code, .mono, .num{
+    font-family:'JetBrains Mono', monospace;
+  }
+  a{ color:inherit; }
+  img{ max-width:100%; display:block; }
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 32px;
+  }
+  @media(max-width:640px){ .wrap{padding:0 20px;} }
+
+  /* ---------- drip motif ---------- */
+  .drip{ display:block; width:100%; height:auto; }
+  .drip-top{ transform: translateY(1px); }
+  .drip-bottom{ transform: rotate(180deg) translateY(1px); }
+
+  /* ---------- nav ---------- */
+  header.site-nav{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    padding:18px 0;
+    background:rgba(18,16,19,0);
+    border-bottom:1px solid transparent;
+    transition:background .3s ease, border-color .3s ease, padding .3s ease;
+  }
+  header.site-nav.scrolled{
+    background:rgba(18,16,19,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+    padding:12px 0;
+  }
+  .nav-inner{
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .nav-logo{
+    font-family:'Anton', sans-serif;
+    font-size:22px;
+    letter-spacing:0.04em;
+    color:var(--cream);
+  }
+  .nav-logo span{ color:var(--orange); }
+  nav.nav-links{ display:flex; gap:34px; }
+  nav.nav-links a{
+    font-size:14px; font-weight:600;
+    text-decoration:none;
+    color:var(--muted);
+    transition:color .2s;
+    position:relative;
+  }
+  nav.nav-links a:hover{ color:var(--cream); }
+  @media(max-width:760px){ nav.nav-links{ display:none; } }
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;
+    padding:190px 0 120px;
+    overflow:hidden;
+    background:
+      radial-gradient(ellipse 900px 500px at 82% 8%, rgba(245,166,35,0.10), transparent 60%),
+      var(--bg);
+  }
+  .hero .drip-top{ position:absolute; top:0; left:0; }
+  .hero-grid{
+    display:grid; grid-template-columns: 1.3fr 0.9fr; gap:60px; align-items:end;
+  }
+  @media(max-width:900px){ .hero-grid{ grid-template-columns:1fr; } }
+  .kicker{
+    display:inline-block;
+    font-size:13px; font-weight:700;
+    color:var(--bg);
+    background:var(--orange);
+    padding:6px 14px;
+    border-radius:2px;
+    margin-bottom:28px;
+  }
+  .hero h1{
+    font-size:clamp(48px, 7.4vw, 96px);
+    color:var(--cream);
+  }
+  .hero h1 em{
+    font-style:normal;
+    color:var(--orange);
+    -webkit-text-stroke: 0;
+  }
+  .hero .tagline{
+    margin-top:18px;
+    font-size:30px;
+  }
+  .hero-side{
+    border-left:1px solid var(--line-strong);
+    padding-left:34px;
+  }
+  .hero-side p{
+    color:var(--muted);
+    font-size:16.5px;
+    max-width:46ch;
+    margin:0 0 22px;
+  }
+  .hero-meta{
+    display:flex; gap:28px; flex-wrap:wrap;
+    margin-top:8px;
+  }
+  .hero-meta div{ min-width:120px; }
+  .hero-meta .num{
+    font-size:30px; color:var(--orange); font-weight:600; display:block;
+  }
+  .hero-meta .lbl{
+    font-size:12.5px; color:var(--muted-2); text-transform:uppercase; letter-spacing:.06em;
+  }
+
+  /* ---------- hero photo ---------- */
+  .hero{ padding:0; min-height:640px; display:flex; align-items:flex-end; }
+  .hero-photo{
+    position:absolute; top:0;right:0;bottom:0;left:0; z-index:0;
+    overflow:hidden;
+    background:
+      radial-gradient(ellipse 1100px 700px at 85% 20%, rgba(245,166,35,0.16), transparent 62%),
+      var(--bg);
+  }
+  .hero-photo svg{ position:absolute; right:-4%; bottom:-6%; width:62%; height:auto; max-width:760px; }
+  @media(max-width:900px){ .hero-photo svg{ opacity:0.35; width:80%; right:-10%; } }
+  .hero-photo::after{
+    content:"";
+    position:absolute; top:0;right:0;bottom:0;left:0;
+    background:
+      linear-gradient(90deg, rgba(12,10,11,0.96) 0%, rgba(12,10,11,0.85) 38%, rgba(12,10,11,0.15) 62%, rgba(12,10,11,0.05) 100%),
+      linear-gradient(0deg, rgba(12,10,11,0.65) 0%, rgba(12,10,11,0) 30%);
+  }
+  .hero-content{ position:relative; z-index:2; width:100%; padding:210px 0 0; }
+  .hero-badge-float{
+    position:relative; z-index:2;
+    margin-top:54px; padding:20px 26px;
+    background:rgba(26,23,19,0.72); backdrop-filter:blur(8px);
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius-card);
+    display:inline-flex; gap:34px; flex-wrap:wrap;
+  }
+  .hero-badge-float div{ min-width:110px; }
+  .hero-badge-float .num{ font-size:26px; color:var(--orange); font-weight:600; display:block; }
+  .hero-badge-float .lbl{ font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .hero-bottom-space{ padding-bottom:56px; }
+  @media(max-width:760px){ .hero{ min-height:auto; } .hero-content{ padding-top:150px; } }
+
+  /* ---------- product cards ---------- */
+  .menu-grid{
+    display:grid; grid-template-columns:repeat(5,1fr); gap:18px;
+    margin-bottom:44px;
+  }
+  @media(max-width:980px){ .menu-grid{ grid-template-columns:repeat(3,1fr); } }
+  @media(max-width:640px){ .menu-grid{ grid-template-columns:repeat(2,1fr); } }
+  .menu-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius-card);
+    overflow:hidden;
+    box-shadow:var(--shadow-card);
+    transition:transform .35s ease, border-color .35s ease;
+  }
+  .menu-card:hover{ transform:translateY(-6px); border-color:var(--line-strong); }
+  .menu-card .photo{
+    aspect-ratio:4/3; min-height:160px; width:100%;
+    background:var(--panel-2);
+    position:relative;
+  }
+  .menu-card .photo svg{ position:absolute; top:0;right:0;bottom:0;left:0; width:100%; height:100%; }
+  .menu-card .photo .var-badge{
+    position:absolute; top:10px; left:10px;
+    background:rgba(18,16,19,0.78); backdrop-filter:blur(3px);
+    color:var(--orange); font-family:'JetBrains Mono',monospace; font-size:12px;
+    padding:4px 9px; border-radius:var(--radius-pill);
+  }
+  .menu-card .body{ padding:16px 16px 18px; }
+  .menu-card .body h4{
+    font-family:'Inter',sans-serif; text-transform:none; font-weight:700;
+    font-size:14.5px; color:var(--cream); margin:0 0 6px; line-height:1.25;
+  }
+  .menu-card .body .tagline{ font-size:12.5px; color:var(--muted); margin:0; min-height:32px; }
+  .menu-card .body .price-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-top:12px; padding-top:12px; border-top:1px solid var(--line);
+  }
+  .menu-card .body .price-row .u{ font-family:'JetBrains Mono',monospace; color:var(--orange); font-size:14px; font-weight:600; }
+  .menu-card .body .price-row .q{ font-size:11.5px; color:var(--muted-2); }
+
+  /* ---------- about media (quienes somos) ---------- */
+  .about-photo{
+    width:100%; aspect-ratio:5/4; min-height:280px;
+    background:var(--panel-2);
+    border-radius:var(--radius-card);
+    box-shadow:var(--shadow-card);
+    position:relative; overflow:hidden;
+  }
+  .about-photo svg{ position:absolute; top:0;right:0;bottom:0;left:0; width:100%; height:100%; }
+
+  /* ---------- inline product thumbnails ---------- */
+  .prod-thumb{
+    display:inline-block; width:26px; height:26px;
+    border-radius:8px; background-size:cover; background-position:center;
+    vertical-align:middle; margin-right:10px;
+    border:1px solid var(--line-strong);
+  }
+  .prod-cell{ display:flex; align-items:center; }
+
+  /* ---------- sections generic ---------- */
+  .sec{ padding:108px 0; position:relative; }
+  .sec.tight{ padding:80px 0; }
+  .sec-alt{ background:var(--bg-soft); }
+  .sec-head{
+    display:grid; grid-template-columns: 0.9fr 1.4fr; gap:50px;
+    margin-bottom:56px;
+    align-items:start;
+  }
+  @media(max-width:820px){ .sec-head{ grid-template-columns:1fr; gap:18px; } }
+  .sec-index{
+    font-family:'JetBrains Mono', monospace;
+    color:var(--muted-2);
+    font-size:14px;
+  }
+  .sec-head h2{
+    font-size:clamp(32px, 4.2vw, 52px);
+    color:var(--cream);
+  }
+  .sec-head .lede{
+    color:var(--muted);
+    font-size:17px;
+    max-width:60ch;
+    margin-top:14px;
+  }
+  .sec-head .lede.right{ }
+
+  /* two column layout helper */
+  .cols{ display:grid; grid-template-columns:1fr 1fr; gap:50px; }
+  @media(max-width:820px){ .cols{ grid-template-columns:1fr; } }
+  .cols-38{ display:grid; grid-template-columns: 0.9fr 1.4fr; gap:50px; }
+  @media(max-width:820px){ .cols-38{ grid-template-columns:1fr; } }
+
+  p.body-text{ color:var(--muted); font-size:16.5px; max-width:62ch; }
+  p.body-text strong{ color:var(--cream); font-weight:600; }
+
+  ul.plain{ list-style:none; margin:0; padding:0; }
+  ul.plain li{
+    padding:14px 0;
+    border-top:1px solid var(--line);
+    color:var(--muted);
+    font-size:15.5px;
+    display:flex; gap:14px;
+  }
+  ul.plain li:last-child{ border-bottom:1px solid var(--line); }
+  ul.plain li::before{
+    content:"—";
+    color:var(--orange);
+    flex-shrink:0;
+  }
+
+  /* ---------- team ---------- */
+  .team-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:14px;
+  }
+  @media(max-width:760px){ .team-grid{ grid-template-columns:repeat(2,1fr); } }
+  .team-cell{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius-card);
+    padding:30px 22px;
+  }
+  .team-cell .n{ color:var(--orange); font-family:'JetBrains Mono',monospace; font-size:13px; }
+  .team-cell .name{ margin-top:10px; font-size:17px; font-weight:600; color:var(--cream); }
+
+  /* ---------- tables ---------- */
+  .tbl-wrap{
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius-card);
+    overflow:hidden;
+    overflow-x:auto;
+  }
+  table{
+    width:100%; border-collapse:collapse; font-size:14.5px;
+    min-width:480px;
+  }
+  thead th{
+    text-align:left;
+    background:var(--panel-2);
+    color:var(--cream);
+    font-weight:600;
+    padding:13px 16px;
+    border-bottom:1px solid var(--line-strong);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:12px 16px;
+    border-bottom:1px solid var(--line);
+    color:var(--muted);
+  }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody td.num{ color:var(--cream); text-align:right; }
+  tbody td.hl{ color:var(--orange); font-weight:600; }
+  table.model-blue thead th{ border-bottom-color: rgba(91,155,213,0.5); }
+  table.model-blue thead{ box-shadow: inset 0 -2px 0 var(--blue-deep); }
+  table.model-green thead{ box-shadow: inset 0 -2px 0 var(--green-deep); }
+  .tbl-tag{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:12.5px; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--muted-2); margin-bottom:10px;
+  }
+  .tbl-tag .dot{ width:8px; height:8px; border-radius:50%; }
+  .tbl-tag.blue .dot{ background:var(--blue); }
+  .tbl-tag.green .dot{ background:var(--green); }
+
+  /* ---------- formula box ---------- */
+  .formula{
+    border:1px solid var(--line-strong);
+    background:var(--panel);
+    border-radius:var(--radius-card);
+    padding:26px 28px;
+    margin:28px 0;
+  }
+  .formula .f-label{ font-size:12.5px; color:var(--muted-2); text-transform:uppercase; letter-spacing:.06em; margin-bottom:12px; }
+  .formula .f-main{ font-family:'JetBrains Mono',monospace; font-size:19px; color:var(--orange); }
+  .formula .f-sub{ font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--muted); margin-top:14px; line-height:1.9; }
+
+  /* ---------- stat row ---------- */
+  .stat-row{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
+    margin-top:40px;
+  }
+  @media(max-width:760px){ .stat-row{ grid-template-columns:1fr; } }
+  .stat{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-card); padding:30px 26px; }
+  .sec-alt .stat{ background:var(--panel-2); }
+  .stat .num{ font-size:38px; color:var(--orange); font-weight:600; display:block; }
+  .stat .lbl{ font-size:13.5px; color:var(--muted); margin-top:6px; }
+
+  /* ---------- divider section ---------- */
+  .divider{
+    position:relative;
+    padding:120px 0;
+    text-align:center;
+    background:var(--bg);
+    overflow:hidden;
+  }
+  .divider-photo{
+    position:absolute; top:0;right:0;bottom:0;left:0; z-index:0;
+    overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .divider-photo svg{ width:340px; height:auto; opacity:0.22; }
+  .divider-photo::after{
+    content:"";
+    position:absolute; top:0;right:0;bottom:0;left:0;
+    background:radial-gradient(ellipse 600px 400px at 50% 50%, rgba(12,10,11,0.2), rgba(12,10,11,0.85) 75%);
+  }
+  .divider .drip-top{ position:absolute; top:0; left:0; opacity:0.9; z-index:1; }
+  .divider h2{
+    font-size:clamp(40px,7vw,74px);
+    color:var(--cream);
+    position:relative; z-index:2;
+  }
+  .divider .sub{ color:var(--muted); margin-top:14px; font-size:16px; position:relative; z-index:2; }
+
+  /* ---------- interpretation list ---------- */
+  .callout-list{ display:flex; flex-direction:column; gap:0; }
+  .callout{
+    display:grid; grid-template-columns:36px 1fr; gap:18px;
+    padding:22px 0;
+    border-top:1px solid var(--line);
+  }
+  .callout:last-child{ border-bottom:1px solid var(--line); }
+  .callout .mark{ color:var(--orange); font-family:'JetBrains Mono',monospace; font-size:14px; padding-top:2px; }
+  .callout p{ margin:0; color:var(--muted); font-size:15.5px; }
+  .callout p strong{ color:var(--cream); }
+
+  /* ---------- posture cards ---------- */
+  .posture-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:10px; }
+  @media(max-width:820px){ .posture-grid{ grid-template-columns:1fr; } }
+  .posture{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-card); padding:36px 32px; }
+  .sec-alt .posture{ background:var(--panel-2); }
+  .posture .tag{
+    display:inline-block; font-size:12.5px; text-transform:uppercase; letter-spacing:.06em;
+    padding:5px 11px; margin-bottom:18px; border:1px solid var(--line-strong); color:var(--muted);
+  }
+  .posture.prod .tag{ color:var(--blue); border-color: rgba(91,155,213,0.4); }
+  .posture.com .tag{ color:var(--orange); border-color: rgba(245,166,35,0.4); }
+  .posture h3{ font-size:22px; text-transform:none; font-family:'Inter',sans-serif; font-weight:700; color:var(--cream); }
+  .posture p{ color:var(--muted); font-size:15.5px; margin-top:14px; }
+
+  /* ---------- acuerdo / desacuerdo ---------- */
+  .verdict{ border:1px solid var(--line-strong); border-radius:var(--radius-card); padding:26px 28px; margin-top:22px; background:var(--panel); }
+  .verdict.ok{ border-left:3px solid var(--green); }
+  .verdict.no{ border-left:3px solid var(--red); }
+  .verdict .v-tag{ font-size:13px; font-weight:700; letter-spacing:.04em; }
+  .verdict.ok .v-tag{ color:var(--green); }
+  .verdict.no .v-tag{ color:var(--red); }
+  .verdict p{ margin:12px 0 0; color:var(--muted); font-size:15.5px; }
+
+  /* ---------- comparison bars ---------- */
+  .compare{ margin-top:20px; }
+  .compare-row{ margin-bottom:26px; }
+  .compare-row .cr-top{ display:flex; justify-content:space-between; font-size:14px; color:var(--muted); margin-bottom:8px; }
+  .compare-row .cr-top .name{ color:var(--cream); font-weight:600; }
+  .bar-track{ height:14px; background:var(--panel-2); position:relative; border:1px solid var(--line); }
+  .bar-fill{
+    position:absolute; top:0; left:0; bottom:0; width:0;
+    transition:width 1.1s cubic-bezier(.2,.8,.2,1);
+  }
+  .bar-fill.blue{ background:linear-gradient(90deg, var(--blue-deep), var(--blue)); }
+  .bar-fill.green{ background:linear-gradient(90deg, var(--green-deep), var(--green)); top:16px; height:14px; }
+  .bar-double{ position:relative; height:34px; }
+  .bar-double .bar-track{ position:absolute; width:100%; }
+  .bar-double .bar-track.b1{ top:0; }
+  .bar-double .bar-track.b2{ top:18px; }
+  .compare-legend{ display:flex; gap:26px; margin-bottom:30px; }
+  .compare-legend span{ display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--muted); }
+  .compare-legend .sw{ width:12px; height:12px; }
+  .compare-legend .sw.blue{ background:var(--blue); }
+  .compare-legend .sw.green{ background:var(--green); }
+
+  /* ---------- subsection heading (within long sections) ---------- */
+  .subhead{
+    display:flex; align-items:baseline; gap:12px;
+    margin:52px 0 18px;
+  }
+  .subhead:first-of-type{ margin-top:8px; }
+  .subhead .sn{ font-family:'JetBrains Mono',monospace; color:var(--orange); font-size:15px; }
+  .subhead h3{
+    font-family:'Inter',sans-serif; text-transform:none; font-weight:700;
+    font-size:19px; color:var(--cream); margin:0;
+  }
+  .note-box{
+    border:1px dashed var(--line-strong); border-radius:var(--radius-card);
+    padding:16px 20px; margin-top:18px;
+    color:var(--muted-2); font-size:13.5px;
+  }
+  .note-box strong{ color:var(--muted); }
+
+  /* ---------- negotiation dialogue ---------- */
+  .dialogue{ display:flex; flex-direction:column; gap:14px; margin-top:36px; }
+  .dialogue-line{
+    max-width:82%;
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius-card);
+    padding:18px 22px;
+    background:var(--panel);
+  }
+  .dialogue-line .who{
+    display:block; font-size:12px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;
+  }
+  .dialogue-line.prod{ align-self:flex-start; }
+  .dialogue-line.prod .who{ color:var(--blue); }
+  .dialogue-line.com{ align-self:flex-end; background:var(--panel-2); }
+  .dialogue-line.com .who{ color:var(--orange); }
+  .dialogue-line p{ margin:0; color:var(--muted); font-size:15px; }
+  @media(max-width:700px){ .dialogue-line{ max-width:100%; } }
+  .reco-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-top:10px; }
+  @media(max-width:820px){ .reco-grid{ grid-template-columns:1fr; } }
+  .reco{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-card); padding:30px 30px; }
+  .reco .rn{ font-family:'JetBrains Mono',monospace; color:var(--orange); font-size:13px; }
+  .reco p{ color:var(--muted); font-size:15.5px; margin-top:12px; }
+
+  /* ---------- rubric check ---------- */
+  .check-list{ margin-top:10px; }
+  .check-item{
+    display:grid; grid-template-columns:28px 1fr auto; gap:16px; align-items:start;
+    padding:18px 0; border-top:1px solid var(--line);
+  }
+  .check-item:last-child{ border-bottom:1px solid var(--line); }
+  .check-item .icon{ font-family:'JetBrains Mono',monospace; font-size:16px; padding-top:2px; }
+  .check-item.pass .icon{ color:var(--green); }
+  .check-item.warn .icon{ color:var(--orange); }
+  .check-item h4{ margin:0; font-size:15.5px; font-weight:700; color:var(--cream); font-family:'Inter',sans-serif; text-transform:none; }
+  .check-item p{ margin:6px 0 0; color:var(--muted); font-size:14.5px; }
+  .check-item .pts{ font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--muted-2); white-space:nowrap; }
+
+  /* ---------- footer ---------- */
+  footer{
+    position:relative;
+    padding:120px 0 50px;
+    background:var(--bg);
+    overflow:hidden;
+  }
+  .footer-photo{
+    position:absolute; top:0;right:0;bottom:0;left:0; z-index:0;
+    overflow:hidden;
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  .footer-photo svg{ width:420px; height:auto; opacity:0.5; transform:translateY(15%); }
+  .footer-photo::after{
+    content:"";
+    position:absolute; top:0;right:0;bottom:0;left:0;
+    background:linear-gradient(180deg, rgba(12,10,11,0.55) 0%, rgba(12,10,11,0.80) 55%, rgba(12,10,11,0.98) 100%);
+  }
+  footer .drip-top{ position:absolute; top:0; left:0; z-index:1; }
+  .footer-inner{ position:relative; z-index:2; text-align:center; padding-top:40px; }
+  footer h2{ font-size:clamp(40px,7vw,72px); color:var(--cream); }
+  footer .sub{ color:var(--orange); font-family:'Caveat',cursive; font-size:24px; margin-top:10px; }
+  .footer-meta{
+    display:flex; justify-content:center; gap:40px; margin-top:44px; flex-wrap:wrap;
+    color:var(--muted-2); font-size:13.5px;
+  }
+  .footer-bottom{
+    margin-top:60px; padding-top:24px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; color:var(--muted-2); font-size:13px; flex-wrap:wrap; gap:10px;
+  }
+
+  /* ---------- reveal on scroll (progressive enhancement: hidden only once JS confirms it can reveal) ---------- */
+  .reveal{ transition:opacity .7s ease, transform .7s ease; }
+  .js-anim .reveal{ opacity:0; transform:translateY(18px); }
+  .js-anim .reveal.in{ opacity:1; transform:translateY(0); }
+
+  .back-top{
+    position:fixed; right:24px; bottom:24px; z-index:90;
+    width:44px; height:44px; border:1px solid var(--line-strong);
+    background:rgba(26,23,19,0.85); backdrop-filter:blur(4px);
+    color:var(--cream); display:flex; align-items:center; justify-content:center;
+    text-decoration:none; font-size:16px;
+    opacity:0; pointer-events:none; transition:opacity .3s;
+  }
+  .back-top.show{ opacity:1; pointer-events:auto; }
+
+  /* ---------- loading transition ---------- */
+  #loader{
+    position:fixed; top:0;right:0;bottom:0;left:0; z-index:9999;
+    background:var(--bg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    transition:opacity .65s ease, visibility .65s ease;
+  }
+  #loader.hide{ opacity:0; visibility:hidden; pointer-events:none; }
+  #loader .loader-rig{ position:relative; width:150px; height:150px; }
+  #loader .loader-rig svg{ position:absolute; top:0;right:0;bottom:0;left:0; width:100%; height:100%; overflow:visible; }
+  #loader .l-piece{ opacity:0; animation:loaderDrop 1.6s cubic-bezier(.34,1.4,.64,1) infinite; }
+  #loader .l-top{ animation-delay:0s; }
+  #loader .l-cheese{ animation-delay:.12s; }
+  #loader .l-patty{ animation-delay:.24s; }
+  #loader .l-tomato{ animation-delay:.36s; }
+  #loader .l-lettuce{ animation-delay:.48s; }
+  #loader .l-bottom{ animation-delay:.6s; opacity:1; }
+  @keyframes loaderDrop{
+    0%{ opacity:0; transform:translateY(-46px); }
+    35%{ opacity:1; transform:translateY(0); }
+    82%{ opacity:1; transform:translateY(0); }
+    100%{ opacity:0; transform:translateY(0); }
+  }
+  #loader .loader-word{
+    margin-top:28px; font-family:'Anton',sans-serif; font-size:22px; letter-spacing:.05em;
+    color:var(--cream);
+  }
+  #loader .loader-word span{ color:var(--orange); }
+  #loader .loader-sub{
+    margin-top:8px; font-size:13px; color:var(--muted); letter-spacing:.04em;
+  }
+  #loader .loader-sub .dots::after{
+    content:''; display:inline-block; width:1em; text-align:left;
+    animation:loaderDots 1.2s steps(4) infinite;
+  }
+  @keyframes loaderDots{
+    0%{ content:''; } 25%{ content:'.'; } 50%{ content:'..'; } 75%{ content:'...'; } 100%{ content:''; }
+  }
+  #loader .loader-track{
+    margin-top:18px; width:180px; height:4px; border-radius:var(--radius-pill);
+    background:var(--panel-2); overflow:hidden;
+  }
+  #loader .loader-fill{
+    height:100%; width:40%; border-radius:var(--radius-pill);
+    background:linear-gradient(90deg, var(--orange-deep), var(--orange));
+    animation:loaderTrack 1.3s ease-in-out infinite;
+  }
+  @keyframes loaderTrack{
+    0%{ transform:translateX(-110%); }
+    100%{ transform:translateX(280%); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    #loader .l-piece{ animation:none; opacity:1; transform:none; }
+    #loader .loader-fill{ animation:none; width:70%; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-rig">
+    <svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
+      <rect class="l-piece l-bottom" x="35" y="148" width="170" height="26" rx="13" fill="var(--bun-deep)"/>
+      <path class="l-piece l-lettuce" d="M30,138 Q50,124 70,138 Q90,124 110,138 Q130,124 150,138 Q170,124 190,138 Q200,132 210,138 L210,144 L30,144 Z" fill="var(--lettuce)"/>
+      <rect class="l-piece l-tomato" x="40" y="122" width="160" height="14" rx="6" fill="var(--tomato)"/>
+      <path class="l-piece l-cheese" d="M38,106 L202,106 L202,119 Q190,129 178,119 Q166,129 154,119 Q142,129 130,119 Q118,129 106,119 Q94,129 82,119 Q70,129 58,119 Q46,129 38,119 Z" fill="var(--cheese)"/>
+      <rect class="l-piece l-patty" x="42" y="86" width="156" height="24" rx="10" fill="var(--meat)"/>
+      <path class="l-piece l-top" d="M40,86 Q40,22 120,22 Q200,22 200,86 Z" fill="var(--bun)"/>
+      <ellipse class="l-piece l-top" cx="90" cy="46" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(-20 90 46)"/>
+      <ellipse class="l-piece l-top" cx="112" cy="36" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(8 112 36)"/>
+      <ellipse class="l-piece l-top" cx="134" cy="42" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(-14 134 42)"/>
+    </svg>
+  </div>
+  <div class="loader-word">WOK<span>KOI</span></div>
+  <div class="loader-sub">Preparando tu pedido<span class="dots"></span></div>
+  <div class="loader-track"><div class="loader-fill"></div></div>
+</div>
+<noscript><style>#loader{display:none;}</style></noscript>
+
+
+<header class="site-nav" id="siteNav">
+  <div class="wrap nav-inner">
+    <div class="nav-logo">WOK<span>KOI</span></div>
+    <nav class="nav-links">
+      <a href="#negocio">El negocio</a>
+      <a href="#modelo">Modelo</a>
+      <a href="#acta">Acta de enfoque</a>
+      <a href="#recomendacion">Recomendación</a>
+      <a href="#sensibilidad">Sensibilidad</a>
+      <a href="#logistica">Logística</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero-photo">
+    <svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="120" cy="190" rx="78" ry="9" fill="#000" opacity="0.3"/>
+      <rect x="35" y="160" width="170" height="24" rx="12" fill="var(--bun-deep)"/>
+      <path d="M28,150 Q50,136 72,150 Q94,136 116,150 Q138,136 160,150 Q182,136 204,150 L204,158 L28,158 Z" fill="var(--lettuce)"/>
+      <rect x="40" y="134" width="160" height="15" rx="6" fill="var(--tomato)"/>
+      <path d="M38,118 L202,118 L202,131 Q190,141 178,131 Q166,141 154,131 Q142,141 130,131 Q118,141 106,131 Q94,141 82,131 Q70,141 58,131 Q46,141 38,131 Z" fill="var(--cheese)"/>
+      <rect x="42" y="98" width="156" height="24" rx="10" fill="var(--meat)"/>
+      <path d="M44,98 L196,98 L196,109 Q184,118 172,109 Q160,118 148,109 Q136,118 124,109 Q112,118 100,109 Q88,118 76,109 Q64,118 52,109 Q46,113 44,109 Z" fill="var(--cheese)" opacity="0.85"/>
+      <rect x="48" y="76" width="144" height="24" rx="10" fill="var(--meat)"/>
+      <path d="M46,76 Q46,15 120,15 Q194,15 194,76 Z" fill="var(--bun)"/>
+      <path d="M46,76 Q46,15 120,15 Q194,15 194,76" fill="none" stroke="var(--bun-deep)" stroke-width="2" opacity="0.4"/>
+      <ellipse cx="88" cy="38" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(-20 88 38)"/>
+      <ellipse cx="109" cy="28" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(8 109 28)"/>
+      <ellipse cx="132" cy="30" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(-12 132 30)"/>
+      <ellipse cx="153" cy="40" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(18 153 40)"/>
+      <ellipse cx="68" cy="52" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(12 68 52)"/>
+      <ellipse cx="171" cy="55" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(-10 171 55)"/>
+    </svg>
+  </div>
+  <svg class="drip drip-top" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;z-index:2;">
+    <path fill="#1c1712" d="M0,0 H1440 V18 C1400,55 1360,10 1320,40 C1290,60 1260,15 1220,38 C1180,58 1140,12 1100,42 C1060,62 1020,18 980,10 C940,4 900,50 860,30 C820,12 780,48 740,20 C700,4 660,42 620,36 C580,30 540,8 500,32 C460,54 420,14 380,26 C340,36 300,4 260,20 C220,34 180,10 140,28 C100,44 60,8 20,22 C10,26 4,18 0,18 Z"/>
+  </svg>
+  <div class="wrap hero-content hero-bottom-space">
+    <div class="hero-grid">
+      <div>
+        <span class="kicker">Investigación Operativa · Modelo de Programación Lineal</span>
+        <h1>Sabor y sazón<br><em>Wokkoi</em></h1>
+        <p class="tagline accent-script">Comida rápida, decisiones exactas.</p>
+      </div>
+      <div class="hero-side">
+        <p>Un puesto de comida rápida con cinco productos en la carta y recursos limitados cada día. Este es el modelo que usamos para decidir cuánto producir de cada uno para ganar lo máximo posible — y lo que pasó cuando el área comercial no estuvo de acuerdo con lo que el modelo proponía.</p>
+      </div>
+    </div>
+    <div class="hero-badge-float">
+      <div><span class="num">5</span><span class="lbl">Variables de decisión</span></div>
+      <div><span class="num">8</span><span class="lbl">Restricciones</span></div>
+      <div><span class="num">S/ 6,824</span><span class="lbl">Ganancia diaria final</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EQUIPO ============ -->
+<section class="sec tight">
+  <div class="wrap">
+    <div class="team-grid reveal">
+      <div class="team-cell"><span class="n">01</span><div class="name">Cuya de la Cruz, Mark Anthony</div></div>
+      <div class="team-cell"><span class="n">02</span><div class="name">Cóndor Rojas, Antony</div></div>
+      <div class="team-cell"><span class="n">03</span><div class="name">Ramos Huamán, Yordan Ronaldo</div></div>
+      <div class="team-cell"><span class="n">04</span><div class="name">García Quijada, Álvaro</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EL NEGOCIO / DESCRIPCION ============ -->
+<section class="sec sec-alt" id="negocio">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-index">01 — Escenario</div>
+      <div>
+        <h2>Quiénes somos</h2>
+        <p class="lede">Somos el equipo detrás de Wokkoi, un puesto de comida rápida que empezamos a imaginar como si fuera un negocio real de nuestra propia ciudad.</p>
+      </div>
+    </div>
+    <div class="cols reveal" style="align-items:center;">
+      <div class="about-photo">
+        <svg viewBox="0 0 300 240" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="150" cy="215" rx="130" ry="14" fill="#000" opacity="0.25"/>
+          <!-- fries box, right -->
+          <g transform="translate(178,30)">
+            <rect x="18" y="82" width="14" height="72" rx="5" fill="var(--fry)" transform="rotate(-9 25 118)"/>
+            <rect x="36" y="70" width="14" height="86" rx="5" fill="var(--fry)" transform="rotate(-3 43 113)"/>
+            <rect x="54" y="64" width="14" height="92" rx="5" fill="var(--fry)" transform="rotate(3 61 110)"/>
+            <rect x="72" y="72" width="14" height="84" rx="5" fill="var(--fry)" transform="rotate(9 79 114)"/>
+            <path d="M8,120 L96,120 L86,180 L18,180 Z" fill="var(--tomato)"/>
+            <rect x="10" y="130" width="84" height="11" fill="var(--cream)" opacity="0.9"/>
+          </g>
+          <!-- burger, left -->
+          <g transform="translate(0,26)">
+            <rect x="18" y="150" width="140" height="22" rx="11" fill="var(--bun-deep)"/>
+            <path d="M12,141 Q32,129 52,141 Q72,129 92,141 Q112,129 132,141 Q152,129 164,138 L164,146 L12,146 Z" fill="var(--lettuce)"/>
+            <rect x="22" y="128" width="132" height="13" rx="5" fill="var(--tomato)"/>
+            <rect x="26" y="108" width="124" height="21" rx="9" fill="var(--meat)"/>
+            <path d="M20,108 Q88,124 156,108 L156,116 Q88,132 20,116 Z" fill="var(--cheese)"/>
+            <path d="M22,90 Q22,40 88,40 Q154,40 154,90 Z" fill="var(--bun)"/>
+            <ellipse cx="65" cy="58" rx="4" ry="2.3" fill="var(--cream)" transform="rotate(-15 65 58)"/>
+            <ellipse cx="88" cy="50" rx="4" ry="2.3" fill="var(--cream)" transform="rotate(6 88 50)"/>
+            <ellipse cx="110" cy="58" rx="4" ry="2.3" fill="var(--cream)" transform="rotate(-10 110 58)"/>
+          </g>
+        </svg>
+      </div>
+      <div>
+        <p class="body-text">Nos pusimos en el lugar de un grupo de socios jóvenes que decidió montar un local pequeño, ágil y con personalidad propia, en el que la comida se prepara rápido pero sin perder el sabor casero: hamburguesas, un combo de hot dog y nuggets de pollo, con las clásicas papas fritas de acompañamiento.</p>
+        <p class="body-text" style="margin-top:16px;"><strong>El problema de decisión:</strong> cada día, Wokkoi tiene que decidir cuánto producir de cada uno de sus cinco productos, sin pasarse de los recursos disponibles (carne, pan, papas, freidoras y horas de cocina) y sin sobrepasar lo que el mercado realmente pide. La meta es simple de enunciar y difícil de lograr sin un modelo: <strong>ganar la mayor cantidad de dinero posible cada día</strong>, produciendo la combinación correcta de los cinco productos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MENU / VARIABLES ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-index">02 — Formulación</div>
+      <div>
+        <h2>Nuestro menú y las variables de decisión</h2>
+        <p class="lede">Wokkoi vende cinco productos, y cada uno representa una variable de decisión: cuánto producir y vender de cada uno por día.</p>
+      </div>
+    </div>
+
+    <div class="menu-grid reveal">
+      <div class="menu-card">
+        <div class="photo">
+          <svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <ellipse cx="120" cy="178" rx="75" ry="8" fill="#000" opacity="0.28"/>
+            <rect x="35" y="148" width="170" height="26" rx="13" fill="var(--bun-deep)"/>
+            <path d="M30,138 Q50,124 70,138 Q90,124 110,138 Q130,124 150,138 Q170,124 190,138 Q200,132 210,138 L210,144 L30,144 Z" fill="var(--lettuce)"/>
+            <rect x="40" y="122" width="160" height="14" rx="6" fill="var(--tomato)"/>
+            <path d="M38,106 L202,106 L202,119 Q190,129 178,119 Q166,129 154,119 Q142,129 130,119 Q118,129 106,119 Q94,129 82,119 Q70,129 58,119 Q46,129 38,119 Z" fill="var(--cheese)"/>
+            <rect x="42" y="86" width="156" height="24" rx="10" fill="var(--meat)"/>
+            <path d="M40,86 Q40,22 120,22 Q200,22 200,86 Z" fill="var(--bun)"/>
+            <ellipse cx="90" cy="46" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(-20 90 46)"/>
+            <ellipse cx="112" cy="36" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(8 112 36)"/>
+            <ellipse cx="134" cy="42" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(-14 134 42)"/>
+            <ellipse cx="153" cy="54" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(18 153 54)"/>
+            <ellipse cx="72" cy="58" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(14 72 58)"/>
+          </svg>
+          <span class="var-badge">x1</span>
+        </div>
+        <div class="body">
+          <h4>Hamburguesa Clásica</h4>
+          <p class="tagline">Producto de entrada: precio accesible, alta rotación.</p>
+          <div class="price-row"><span class="u">S/20 / unid.</span><span class="q">5.00 u/día</span></div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="photo">
+          <svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <ellipse cx="120" cy="190" rx="78" ry="8" fill="#000" opacity="0.3"/>
+            <rect x="35" y="160" width="170" height="24" rx="12" fill="var(--bun-deep)"/>
+            <path d="M28,150 Q50,136 72,150 Q94,136 116,150 Q138,136 160,150 Q182,136 204,150 L204,158 L28,158 Z" fill="var(--lettuce)"/>
+            <rect x="40" y="134" width="160" height="15" rx="6" fill="var(--tomato)"/>
+            <path d="M38,118 L202,118 L202,131 Q190,141 178,131 Q166,141 154,131 Q142,141 130,131 Q118,141 106,131 Q94,141 82,131 Q70,141 58,131 Q46,141 38,131 Z" fill="var(--cheese)"/>
+            <rect x="42" y="98" width="156" height="24" rx="10" fill="var(--meat)"/>
+            <path d="M44,98 L196,98 L196,109 Q184,118 172,109 Q160,118 148,109 Q136,118 124,109 Q112,118 100,109 Q88,118 76,109 Q64,118 52,109 Q46,113 44,109 Z" fill="var(--cheese)" opacity="0.85"/>
+            <rect x="48" y="76" width="144" height="24" rx="10" fill="var(--meat)"/>
+            <path d="M46,76 Q46,15 120,15 Q194,15 194,76 Z" fill="var(--bun)"/>
+            <ellipse cx="88" cy="38" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(-20 88 38)"/>
+            <ellipse cx="109" cy="28" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(8 109 28)"/>
+            <ellipse cx="132" cy="30" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(-12 132 30)"/>
+            <ellipse cx="153" cy="40" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(18 153 40)"/>
+            <ellipse cx="68" cy="52" rx="4.5" ry="2.6" fill="var(--cream)" transform="rotate(12 68 52)"/>
+          </svg>
+          <span class="var-badge">x2</span>
+        </div>
+        <div class="body">
+          <h4>Hamburguesa Doble Queso</h4>
+          <p class="tagline">La opción "premium" de la carta, con mejor margen por unidad.</p>
+          <div class="price-row"><span class="u">S/50 / unid.</span><span class="q">6.59 u/día</span></div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="photo">
+          <svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <ellipse cx="120" cy="185" rx="65" ry="8" fill="#000" opacity="0.28"/>
+            <rect x="85" y="55" width="13" height="78" rx="5" fill="var(--fry)" transform="rotate(-10 91 94)"/>
+            <rect x="102" y="42" width="13" height="90" rx="5" fill="var(--fry)" transform="rotate(-3 108 87)"/>
+            <rect x="119" y="36" width="13" height="96" rx="5" fill="var(--fry)" transform="rotate(2 125 84)"/>
+            <rect x="136" y="42" width="13" height="90" rx="5" fill="var(--fry)" transform="rotate(7 142 87)"/>
+            <rect x="152" y="55" width="13" height="78" rx="5" fill="var(--fry)" transform="rotate(12 158 94)"/>
+            <path d="M62,110 L182,110 L166,178 L78,178 Z" fill="var(--tomato)"/>
+            <rect x="66" y="122" width="112" height="13" fill="var(--cream)" opacity="0.92"/>
+          </svg>
+          <span class="var-badge">x3</span>
+        </div>
+        <div class="body">
+          <h4>Papas Fritas</h4>
+          <p class="tagline">El acompañante infaltable en cualquier local de comida rápida.</p>
+          <div class="price-row"><span class="u">S/10 / unid.</span><span class="q">5.00 u/día</span></div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="photo">
+          <svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <ellipse cx="120" cy="150" rx="98" ry="9" fill="#000" opacity="0.28"/>
+            <rect x="24" y="88" width="192" height="52" rx="26" fill="var(--bun)"/>
+            <rect x="38" y="80" width="164" height="36" rx="18" fill="var(--sausage)"/>
+            <path d="M52,88 Q66,74 80,88 Q94,102 108,88 Q122,74 136,88 Q150,102 164,88 Q178,74 190,88" fill="none" stroke="var(--cheese)" stroke-width="7" stroke-linecap="round"/>
+          </svg>
+          <span class="var-badge">x4</span>
+        </div>
+        <div class="body">
+          <h4>Combo Hot Dog</h4>
+          <p class="tagline">Pensado para el cliente que busca algo rápido y económico.</p>
+          <div class="price-row"><span class="u">S/30 / unid.</span><span class="q">10.00 u/día</span></div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="photo">
+          <svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <ellipse cx="118" cy="172" rx="88" ry="8" fill="#000" opacity="0.28"/>
+            <ellipse cx="70" cy="118" rx="24" ry="17" fill="#e2a542" transform="rotate(-10 70 118)"/>
+            <ellipse cx="102" cy="106" rx="26" ry="18" fill="#eab054" transform="rotate(8 102 106)"/>
+            <ellipse cx="137" cy="113" rx="25" ry="17" fill="#e2a542" transform="rotate(-6 137 113)"/>
+            <ellipse cx="118" cy="128" rx="24" ry="16" fill="#d99a3e" transform="rotate(4 118 128)"/>
+            <circle cx="80" cy="112" r="1.6" fill="var(--meat)" opacity="0.35"/>
+            <circle cx="112" cy="100" r="1.6" fill="var(--meat)" opacity="0.35"/>
+            <circle cx="128" cy="118" r="1.6" fill="var(--meat)" opacity="0.35"/>
+            <rect x="36" y="132" width="150" height="42" rx="10" fill="var(--bun-deep)"/>
+            <line x1="36" y1="145" x2="186" y2="145" stroke="var(--bun)" stroke-width="3" opacity="0.5"/>
+            <line x1="36" y1="158" x2="186" y2="158" stroke="var(--bun)" stroke-width="3" opacity="0.5"/>
+            <ellipse cx="196" cy="152" rx="18" ry="14" fill="var(--tomato)"/>
+          </svg>
+          <span class="var-badge">x5</span>
+        </div>
+        <div class="body">
+          <h4>Nuggets de Pollo (caja x6)</h4>
+          <p class="tagline">Nuestra alternativa para quien no quiere carne de res.</p>
+          <div class="price-row"><span class="u">S/52 / caja</span><span class="q">116.25 cajas/día</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tbl-wrap reveal">
+      <table>
+        <thead>
+          <tr><th>Variable</th><th>Producto</th><th>Por qué está en el menú</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="hl">x1</td><td>Hamburguesa Clásica</td><td>Producto de entrada: precio accesible, alta rotación.</td></tr>
+          <tr><td class="hl">x2</td><td>Hamburguesa Doble Queso</td><td>La opción "premium" de la carta, con mejor margen por unidad.</td></tr>
+          <tr><td class="hl">x3</td><td>Papas Fritas (porción)</td><td>El acompañante infaltable en cualquier local de comida rápida.</td></tr>
+          <tr><td class="hl">x4</td><td>Combo Hot Dog</td><td>Pensado para el cliente que busca algo rápido y económico.</td></tr>
+          <tr><td class="hl">x5</td><td>Nuggets de Pollo (caja x6)</td><td>Nuestra alternativa para quien no quiere carne de res.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RECURSOS + FUNCION OBJETIVO ============ -->
+<section class="sec sec-alt">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-index">03 — Restricciones</div>
+      <div>
+        <h2>Lo que tenemos que cuidar cada día</h2>
+        <p class="lede">Cada límite se convierte en una restricción del modelo: nunca podemos usar más carne, pan, papas, minutos de freidora u horas de cocina de los que realmente tenemos, ni producir más combos de hot dog de los que el mercado pediría.</p>
+      </div>
+    </div>
+    <div class="tbl-wrap reveal">
+      <table>
+        <thead><tr><th>Recurso</th><th>Disponible por día</th></tr></thead>
+        <tbody>
+          <tr><td>Carne de res</td><td class="num">2,000 g</td></tr>
+          <tr><td>Pan de hamburguesa</td><td class="num">200 unid.</td></tr>
+          <tr><td>Papas crudas</td><td class="num">1,800 g</td></tr>
+          <tr><td>Capacidad de freidoras</td><td class="num">480 min</td></tr>
+          <tr><td>Horas-hombre en cocina</td><td class="num">540 min</td></tr>
+          <tr><td>Demanda de Combo Hot Dog</td><td class="num">100 unid.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="formula reveal">
+      <div class="f-label">Función objetivo</div>
+      <div class="f-main">Max Z = 20x1 + 50x2 + 10x3 + 30x4 + 52x5</div>
+      <div class="f-sub">Para cada producto calculamos cuánto deja de ganancia neta: S/20 por hamburguesa clásica, S/50 por la doble queso, S/10 por porción de papas, S/30 por combo de hot dog y S/52 por caja de nuggets. Sumando esas ganancias según cuánto produzcamos de cada una, obtenemos la ganancia total del día, a la que llamamos Z.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DIVIDER: MODELO ============ -->
+<section class="divider">
+  <div class="divider-photo">
+    <svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="85" y="55" width="13" height="78" rx="5" fill="var(--fry)" transform="rotate(-10 91 94)"/>
+      <rect x="102" y="42" width="13" height="90" rx="5" fill="var(--fry)" transform="rotate(-3 108 87)"/>
+      <rect x="119" y="36" width="13" height="96" rx="5" fill="var(--fry)" transform="rotate(2 125 84)"/>
+      <rect x="136" y="42" width="13" height="90" rx="5" fill="var(--fry)" transform="rotate(7 142 87)"/>
+      <rect x="152" y="55" width="13" height="78" rx="5" fill="var(--fry)" transform="rotate(12 158 94)"/>
+      <path d="M62,110 L182,110 L166,178 L78,178 Z" fill="var(--tomato)"/>
+      <rect x="66" y="122" width="112" height="13" fill="var(--cream)" opacity="0.92"/>
+    </svg>
+  </div>
+  <svg class="drip drip-top" viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill="#1a1713" d="M0,0 H1440 V14 C1400,44 1360,8 1320,32 C1280,50 1240,12 1200,30 C1160,46 1120,10 1080,26 C1040,40 1000,14 960,24 C920,32 880,6 840,22 C800,36 760,12 720,20 C680,26 640,4 600,18 C560,30 520,8 480,20 C440,30 400,6 360,16 C320,24 280,4 240,14 C200,22 160,6 120,16 C80,24 40,4 0,12 Z"/>
+  </svg>
+  <h2 id="modelo">Modelo</h2>
+  <p class="sub">Lo que Solver nos devolvió al correr el modelo por primera vez.</p>
+</section>
+
+<!-- ============ MODELO 1 ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-index">04 — Solución óptima</div>
+      <div>
+        <h2>Modelo 1: Solver-IA</h2>
+        <p class="lede">Cuando corrimos el modelo en Excel Solver, nos devolvió una mezcla óptima que maximiza la ganancia sin ninguna otra condición además de los recursos disponibles.</p>
+      </div>
+    </div>
+
+    <div class="cols reveal">
+      <div>
+        <span class="tbl-tag blue"><span class="dot"></span>Variables de decisión</span>
+        <div class="tbl-wrap">
+          <table class="model-blue">
+            <thead><tr><th>Producto</th><th>Cantidad / día</th></tr></thead>
+            <tbody>
+              <tr><td>Hamburguesa Clásica</td><td class="num">0 unid.</td></tr>
+              <tr><td>Hamburguesa Doble Queso</td><td class="num">9.09 unid.</td></tr>
+              <tr><td>Papas Fritas</td><td class="num">0 unid.</td></tr>
+              <tr><td>Combo Hot Dog</td><td class="num">10 unid.</td></tr>
+              <tr><td>Nuggets de Pollo (caja x6)</td><td class="num">120 cajas</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <span class="tbl-tag blue"><span class="dot"></span>Uso de recursos</span>
+        <div class="tbl-wrap">
+          <table class="model-blue">
+            <thead><tr><th>Recurso</th><th>Usado</th><th>Disponible</th></tr></thead>
+            <tbody>
+              <tr><td>Carne de res</td><td class="num hl">2,000 g</td><td class="num">2,000 g</td></tr>
+              <tr><td>Pan de hamburguesa</td><td class="num">9.09 unid.</td><td class="num">200 unid.</td></tr>
+              <tr><td>Papas crudas</td><td class="num">0 g</td><td class="num">1,800 g</td></tr>
+              <tr><td>Capacidad de freidoras</td><td class="num hl">480 min</td><td class="num">480 min</td></tr>
+              <tr><td>Horas-hombre en cocina</td><td class="num">444.55 min</td><td class="num">540 min</td></tr>
+              <tr><td>Combo Hot Dog</td><td class="num hl">100 unid.</td><td class="num">100 unid.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-row reveal">
+      <div class="stat"><span class="num">S/ 6,994.55</span><span class="lbl">Ganancia diaria (Z óptimo)</span></div>
+      <div class="stat"><span class="num">2</span><span class="lbl">Productos en cero (Hamb. Clásica y Papas Fritas)</span></div>
+      <div class="stat"><span class="num">4</span><span class="lbl">Recursos usados al límite</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INTERPRETACION ============ -->
+<section class="sec sec-alt">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-index">05 — Lectura del modelo</div>
+      <div>
+        <h2>Interpretación del modelo</h2>
+        <p class="lede">Los números por sí solos no dicen nada hasta que se traducen a decisiones del negocio.</p>
+      </div>
+    </div>
+    <div class="callout-list reveal">
+      <div class="callout">
+        <div class="mark">01</div>
+        <p>Varias restricciones se cumplen exactamente al límite (holgura = 0): <strong>carne de res, capacidad de freidoras y demanda de Combo Hot Dog</strong>. Esto confirma que la solución es eficiente: no hay margen desperdiciado en los recursos críticos.</p>
+      </div>
+      <div class="callout">
+        <div class="mark">02</div>
+        <p><strong>Pan de hamburguesa, papas crudas y horas-hombre en cocina</strong> mantienen holgura amplia — Wokkoi todavía tiene margen en esos tres recursos incluso con el menú completo en producción.</p>
+      </div>
+      <div class="callout">
+        <div class="mark">03</div>
+        <p>El costo de ajustar el modelo más adelante (S/170.00/día) es exactamente lo que le cuesta a Wokkoi "obligar" a producir 5 unidades de Hamburguesa Clásica (costo reducido S/5 × 5 = S/25) y 5 de Papas Fritas (costo reducido S/29 × 5 = S/145): 25 + 145 = S/170, que coincide con la diferencia de ganancia entre ambos modelos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SUPUESTOS ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-index">06 — Supuestos</div>
+      <div>
+        <h2>Supuestos que hicimos como equipo</h2>
+        <p class="lede">Todo modelo simplifica la realidad. Estos son los límites que le pusimos al nuestro.</p>
+      </div>
+    </div>
+    <ul class="plain reveal">
+      <li>Asumimos que todo lo que producimos en un día se vende ese mismo día (no manejamos inventario de un día para otro).</li>
+      <li>Los precios, costos y utilidades por unidad se mantienen fijos durante el periodo analizado.</li>
+      <li>El consumo de insumos por unidad es constante: no consideramos mermas ni economías de escala.</li>
+      <li>Las horas de cocina y los minutos de freidora se pueden repartir de forma continua entre los cinco productos.</li>
+      <li>La única restricción de demanda que incluimos es la del Combo Hot Dog; para los demás productos asumimos que el mercado absorbe toda la producción.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ DIVIDER: ACTA DE ENFOQUE ============ -->
+<section class="divider" id="acta">
+  <div class="divider-photo">
+    <svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="35" y="160" width="170" height="24" rx="12" fill="var(--bun-deep)"/>
+      <path d="M28,150 Q50,136 72,150 Q94,136 116,150 Q138,136 160,150 Q182,136 204,150 L204,158 L28,158 Z" fill="var(--lettuce)"/>
+      <rect x="40" y="134" width="160" height="15" rx="6" fill="var(--tomato)"/>
+      <path d="M38,118 L202,118 L202,131 Q190,141 178,131 Q166,141 154,131 Q142,141 130,131 Q118,141 106,131 Q94,141 82,131 Q70,141 58,131 Q46,141 38,131 Z" fill="var(--cheese)"/>
+      <rect x="42" y="98" width="156" height="24" rx="10" fill="var(--meat)"/>
+      <rect x="48" y="76" width="144" height="24" rx="10" fill="var(--meat)"/>
+      <path d="M46,76 Q46,15 120,15 Q194,15 194,76 Z" fill="var(--bun)"/>
+    </svg>
+  </div>
+  <svg class="drip drip-top" viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill="#1a1713" d="M0,0 H1440 V14 C1400,44 1360,8 1320,32 C1280,50 1240,12 1200,30 C1160,46 1120,10 1080,26 C1040,40 1000,14 960,24 C920,32 880,6 840,22 C800,36 760,12 720,20 C680,26 640,4 600,18 C560,30 520,8 480,20 C440,30 400,6 360,16 C320,24 280,4 240,14 C200,22 160,6 120,16 C80,24 40,4 0,12 Z"/>
+  </svg>
+  <h2>Acta de enfoque</h2>
+  <p class="sub">Producción vs. Comercial: qué pasó cuando el equipo se sentó a leer el Modelo 1.</p>
+</section>
+
+<!-- ============ POSTURAS ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-index">07 — Dos lecturas del mismo número</div>
+      <div>
+        <h2>Producción vs. Comercial</h2>
+        <p class="lede">El Modelo 1 es clarísimo en los números. El problema es que los números no son la única variable de un negocio.</p>
+      </div>
+    </div>
+    <div class="posture-grid reveal">
+      <div class="posture prod">
+        <span class="tag">Postura de producción</span>
+        <h3>Seguir el modelo tal cual sale</h3>
+        <p>Hamburguesa Clásica y Papas Fritas nos hacen perder plata frente a lo que rinden la carne y la freidora en los otros productos. La lectura de producción es directa: dejar esos dos productos fuera del día a día.</p>
+      </div>
+      <div class="posture com">
+        <span class="tag">Postura de comercial</span>
+        <h3>No se puede vaciar la carta</h3>
+        <p>No podemos sacar del menú justo la hamburguesa clásica y las papas fritas: son los dos productos que cualquier cliente de comida rápida espera encontrar. Sin ellos, Wokkoi deja de parecer un local de comida rápida completo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODELO AJUSTADO ============ -->
+<section class="sec sec-alt">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-index">08 — Evidencia</div>
+      <div>
+        <h2>Modelo 2: el modelo ajustado</h2>
+        <p class="lede">Producción acepta un mínimo de 5 unidades diarias para cada uno de los dos productos —representa al menos un grupo fijo de clientes que los pide— y el equipo vuelve a correr Solver.</p>
+      </div>
+    </div>
+
+    <div class="cols reveal">
+      <div>
+        <span class="tbl-tag green"><span class="dot"></span>Variables de decisión</span>
+        <div class="tbl-wrap">
+          <table class="model-green">
+            <thead><tr><th>Producto</th><th>Cantidad / día</th></tr></thead>
+            <tbody>
+              <tr><td>Hamburguesa Clásica</td><td class="num">5.00 unid.</td></tr>
+              <tr><td>Hamburguesa Doble Queso</td><td class="num">6.59 unid.</td></tr>
+              <tr><td>Papas Fritas</td><td class="num">5.00 unid.</td></tr>
+              <tr><td>Combo Hot Dog</td><td class="num">10.00 unid.</td></tr>
+              <tr><td>Nuggets de Pollo (caja x6)</td><td class="num">116.25 cajas</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <span class="tbl-tag green"><span class="dot"></span>Restricciones + acuerdo</span>
+        <div class="tbl-wrap">
+          <table class="model-green">
+            <thead><tr><th>Recurso / acuerdo</th><th>Usado</th><th>Holgura</th></tr></thead>
+            <tbody>
+              <tr><td>Carne de res</td><td class="num hl">2,000 g</td><td class="num">0.00 g</td></tr>
+              <tr><td>Pan de hamburguesa</td><td class="num">11.59 unid.</td><td class="num">188.41 unid.</td></tr>
+              <tr><td>Papas crudas</td><td class="num">1,000 g</td><td class="num">800.00 g</td></tr>
+              <tr><td>Capacidad de freidoras</td><td class="num hl">480 min</td><td class="num">0.00 min</td></tr>
+              <tr><td>Horas-hombre en cocina</td><td class="num">448.30 min</td><td class="num">91.70 min</td></tr>
+              <tr><td>Combo Hot Dog</td><td class="num hl">100 unid.</td><td class="num">0.00 unid.</td></tr>
+              <tr><td>Mínimo Hamb. Clásica (acta)</td><td class="num hl">5 unid.</td><td class="num">0.00 unid.</td></tr>
+              <tr><td>Mínimo Papas Fritas (acta)</td><td class="num hl">5 unid.</td><td class="num">0.00 unid.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="formula reveal">
+      <div class="f-label">Modelo final — formulación completa</div>
+      <div class="f-main" style="font-size:16px;">Max Z = 20x1 + 50x2 + 10x3 + 30x4 + 52x5</div>
+      <div class="f-sub">s.a.:  110x1 + 220x2 ≤ 2,000 g (carne de res)  |  x1 + x2 ≤ 200 unid. (pan)  |  200x3 ≤ 1,800 g (papas crudas)
+      <br>3x3 + 4x5 ≤ 480 min (freidoras)  |  4x1 + 6x2 + 2x3 + 3x4 + 3x5 ≤ 540 min (horas-hombre cocina)  |  10x4 ≤ 100 unid. (demanda Combo Hot Dog)
+      <br>Acuerdo de la acta:  x1 ≥ 5 unid. (mínimo Hamb. Clásica)  |  x3 ≥ 5 unid. (mínimo Papas Fritas)  |  x1,…,x5 ≥ 0</div>
+    </div>
+
+    <div class="stat-row reveal">
+      <div class="stat"><span class="num">S/ 6,824.55</span><span class="lbl">Ganancia diaria (Modelo 2)</span></div>
+      <div class="stat"><span class="num">− S/ 170.00</span><span class="lbl">Costo diario del acuerdo comercial (2.43%)</span></div>
+      <div class="stat"><span class="num">5 / 5</span><span class="lbl">Variables activas — ningún producto en cero</span></div>
+    </div>
+
+    <div class="dialogue reveal">
+      <div class="dialogue-line prod">
+        <span class="who">Producción</span>
+        <p>Midamos cuánto nos cuesta en soles mantener ambos. Pongamos un mínimo de 5 unidades diarias para cada uno —representa al menos un grupo fijo de clientes que los pide— y corramos Solver otra vez.</p>
+      </div>
+      <div class="dialogue-line com">
+        <span class="who">Comercial</span>
+        <p>Con esos mínimos, la ganancia baja de S/6,994.55 a S/6,824.55, es decir, una reducción de solo S/170 al día (2.43%). A cambio, mantenemos las 5 variables del menú y evitamos perder clientes de esos dos productos.</p>
+      </div>
+      <div class="dialogue-line prod">
+        <span class="who">Producción</span>
+        <p>Puedo aceptar ese precio: es una fracción pequeña (2.43%) de la ganancia total y evita que perdamos clientes de esos dos productos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMPARATIVO ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-index">09 — Comparativo</div>
+      <div>
+        <h2>Modelo 1 frente a Modelo 2</h2>
+        <p class="lede">La misma carta, dos formas distintas de repartir la producción del día.</p>
+      </div>
+    </div>
+
+    <div class="compare-legend reveal">
+      <span><span class="sw blue"></span>Modelo 1 — Solver-IA</span>
+      <span><span class="sw green"></span>Modelo 2 — Final (acuerdo)</span>
+    </div>
+
+    <div class="compare reveal" id="compareChart">
+      <div class="compare-row">
+        <div class="cr-top"><span class="name">Hamburguesa Clásica</span><span>0 → 5.00 unid.</span></div>
+        <div class="bar-double">
+          <div class="bar-track b1"><div class="bar-fill blue" data-w="0%"></div></div>
+          <div class="bar-track b2"><div class="bar-fill green" data-w="4.2%"></div></div>
+        </div>
+      </div>
+      <div class="compare-row">
+        <div class="cr-top"><span class="name">Hamburguesa Doble Queso</span><span>9.09 → 6.59 unid.</span></div>
+        <div class="bar-double">
+          <div class="bar-track b1"><div class="bar-fill blue" data-w="7.6%"></div></div>
+          <div class="bar-track b2"><div class="bar-fill green" data-w="5.5%"></div></div>
+        </div>
+      </div>
+      <div class="compare-row">
+        <div class="cr-top"><span class="name">Papas Fritas</span><span>0 → 5.00 unid.</span></div>
+        <div class="bar-double">
+          <div class="bar-track b1"><div class="bar-fill blue" data-w="0%"></div></div>
+          <div class="bar-track b2"><div class="bar-fill green" data-w="4.2%"></div></div>
+        </div>
+      </div>
+      <div class="compare-row">
+        <div class="cr-top"><span class="name">Combo Hot Dog</span><span>10 → 10 unid.</span></div>
+        <div class="bar-double">
+          <div class="bar-track b1"><div class="bar-fill blue" data-w="8.3%"></div></div>
+          <div class="bar-track b2"><div class="bar-fill green" data-w="8.3%"></div></div>
+        </div>
+      </div>
+      <div class="compare-row">
+        <div class="cr-top"><span class="name">Nuggets de Pollo (caja x6)</span><span>120 → 116.25 cajas</span></div>
+        <div class="bar-double">
+          <div class="bar-track b1"><div class="bar-fill blue" data-w="100%"></div></div>
+          <div class="bar-track b2"><div class="bar-fill green" data-w="96.9%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tbl-wrap reveal" style="margin-top:36px;">
+      <table>
+        <thead><tr><th>Indicador</th><th>Modelo 1</th><th>Modelo 2</th><th>Diferencia</th></tr></thead>
+        <tbody>
+          <tr><td>Ganancia diaria</td><td class="num">S/ 6,994.55</td><td class="num">S/ 6,824.55</td><td class="num hl">− S/ 170.00</td></tr>
+          <tr><td>Productos con producción &gt; 0</td><td class="num">3 de 5</td><td class="num">5 de 5</td><td class="num hl">+2</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ACUERDO / DESACUERDO ============ -->
+<section class="sec sec-alt">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-index">10 — Cierre del acta</div>
+      <div>
+        <h2>Punto de acuerdo y de desacuerdo</h2>
+        <p class="lede">Así quedó registrada la negociación entre las dos posturas.</p>
+      </div>
+    </div>
+
+    <div class="verdict ok reveal">
+      <span class="v-tag">✓ ACUERDO</span>
+      <p>Adoptar el Modelo 2 (modelo ajustado) como el modelo final de Wokkoi: 5 hamburguesas clásicas, 6.59 dobles queso, 5 papas fritas, 10 combos hot dog y 116.25 cajas de nuggets — ganancia de S/ 6,824.55 al día. Aunque el Modelo 1 rinde más en números puros (S/ 6,994.55), la diferencia es de solo S/ 170 al día (2.43%): el equipo considera el Modelo 2 más beneficioso para el negocio en conjunto porque usa las cinco variables (ningún producto en cero) y protege la base de clientes de cada producto.</p>
+    </div>
+    <div class="verdict no reveal">
+      <span class="v-tag">✗ DESACUERDO</span>
+      <p>Producción cree que con 2–3 unidades mínimas de cada producto bastaría para "cumplir"; Comercial pide al menos 8–10 para asegurar buen surtido en horas pico. Se deja pendiente medir la venta real durante dos semanas para ajustar la cifra final de 5 unidades.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RECOMENDACION ============ -->
+<section class="sec" id="recomendacion">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-index">11 — Toma de decisiones</div>
+      <div>
+        <h2>Recomendación</h2>
+        <p class="lede">Con el acuerdo firmado, esto es lo que le proponemos a Wokkoi para las próximas semanas.</p>
+      </div>
+    </div>
+    <div class="reco-grid reveal">
+      <div class="reco">
+        <span class="rn">01</span>
+        <p>Implementar el Modelo 2 (modelo ajustado) para producción diaria de Wokkoi.</p>
+      </div>
+      <div class="reco">
+        <span class="rn">02</span>
+        <p>No invertir por ahora en pan, papas crudas ni más personal de cocina: estos tres recursos tienen bastante margen sin usar (holgura de 188.41 unid. de pan, 800 g de papas crudas y 91.70 min de horas-hombre). Poner dinero ahí no movería la aguja.</p>
+      </div>
+      <div class="reco">
+        <span class="rn">03</span>
+        <p>Negociar con el proveedor de carne de res un mayor volumen. Cada gramo adicional de carne vale S/0.227/g (≈ S/227 por kilo extra) en ganancia. Si se consigue ampliar de 2 kg a, por ejemplo, 2.5 kg diarios, eso se traduce directamente en más producción de hamburguesas doble queso (la más rentable del menú).</p>
+      </div>
+      <div class="reco">
+        <span class="rn">04</span>
+        <p>Si se logra ampliar la capacidad de freidora, volver a correr el modelo. Con más minutos de freidora disponibles, probablemente ya no sea necesario sacrificar ganancia para mantener las papas fritas en el menú: el mínimo de 5 unid. podría dejar de ser un costo y convertirse en una decisión rentable por sí sola.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DIVIDER: SENSIBILIDAD ============ -->
+<section class="divider" id="sensibilidad">
+  <div class="divider-photo">
+    <svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="70" cy="118" rx="24" ry="17" fill="#e2a542" transform="rotate(-10 70 118)"/>
+      <ellipse cx="102" cy="106" rx="26" ry="18" fill="#eab054" transform="rotate(8 102 106)"/>
+      <ellipse cx="137" cy="113" rx="25" ry="17" fill="#e2a542" transform="rotate(-6 137 113)"/>
+      <ellipse cx="118" cy="128" rx="24" ry="16" fill="#d99a3e" transform="rotate(4 118 128)"/>
+      <rect x="36" y="132" width="150" height="42" rx="10" fill="var(--bun-deep)"/>
+      <ellipse cx="196" cy="152" rx="18" ry="14" fill="var(--tomato)"/>
+    </svg>
+  </div>
+  <svg class="drip drip-top" viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill="#1a1713" d="M0,0 H1440 V14 C1400,44 1360,8 1320,32 C1280,50 1240,12 1200,30 C1160,46 1120,10 1080,26 C1040,40 1000,14 960,24 C920,32 880,6 840,22 C800,36 760,12 720,20 C680,26 640,4 600,18 C560,30 520,8 480,20 C440,30 400,6 360,16 C320,24 280,4 240,14 C200,22 160,6 120,16 C80,24 40,4 0,12 Z"/>
+  </svg>
+  <h2>Sensibilidad</h2>
+  <p class="sub">Qué tan firme es el Modelo 2 frente a cambios en precios, costos y disponibilidad de recursos.</p>
+</section>
+
+<!-- ============ INFORME DE SENSIBILIDAD ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-index">12 — Sensibilidad</div>
+      <div>
+        <h2>Análisis de sensibilidad y precios sombra</h2>
+        <p class="lede">Antes de llevar el Modelo 2 a la operación diaria, revisamos qué tanto puede moverse cada dato sin que la mezcla óptima cambie de estructura. Este es el informe de sensibilidad que entrega Excel Solver sobre el Modelo Final (Acuerdo).</p>
+      </div>
+    </div>
+
+    <span class="tbl-tag green"><span class="dot"></span>Celdas de variables</span>
+    <div class="tbl-wrap reveal">
+      <table>
+        <thead><tr><th>Producto</th><th>Valor final</th><th>Costo reducido</th><th>Coef. objetivo</th><th>Permisible aumentar</th><th>Permisible reducir</th><th>Rango válido (min–max)</th></tr></thead>
+        <tbody>
+          <tr><td>Hamburguesa Clásica</td><td class="num">5.00 unid.</td><td class="num">S/0.00</td><td class="num hl">S/20.00</td><td class="num">S/5.00</td><td class="num">sin límite</td><td class="num">−∞ – S/25.00</td></tr>
+          <tr><td>Hamburguesa Doble Queso</td><td class="num">6.59 unid.</td><td class="num">S/0.00</td><td class="num hl">S/50.00</td><td class="num">sin límite</td><td class="num">S/10.00</td><td class="num">−∞ – S/39.00 *</td></tr>
+          <tr><td>Papas Fritas</td><td class="num">5.00 unid.</td><td class="num">S/0.00</td><td class="num hl">S/10.00</td><td class="num">S/29.00</td><td class="num">sin límite</td><td class="num">S/0.00 – sin límite</td></tr>
+          <tr><td>Combo Hot Dog</td><td class="num">10.00 unid.</td><td class="num">S/0.00</td><td class="num hl">S/30.00</td><td class="num">sin límite</td><td class="num">S/30.00</td><td class="num">S/13.33 – sin límite</td></tr>
+          <tr><td>Nuggets de Pollo (caja x6)</td><td class="num">116.25 cajas</td><td class="num">S/0.00</td><td class="num hl">S/52.00</td><td class="num">sin límite</td><td class="num">S/38.67</td><td class="num">S/0.00 – S/0.00 *</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note-box reveal">* Los rangos marcados con asterisco salen así, tal cual, del informe de Excel (Doble Queso y Nuggets). Antes de sustentar conviene verificar esas dos celdas en la hoja original — probablemente el límite inferior de Doble Queso y el rango de Nuggets tengan una referencia desfasada.</div>
+
+    <span class="tbl-tag green" style="display:block;margin-top:40px;"><span class="dot"></span>Restricciones</span>
+    <div class="tbl-wrap reveal">
+      <table>
+        <thead><tr><th>Restricción</th><th>Valor final</th><th>Precio sombra</th><th>Lado derecho</th><th>Permisible aumentar</th><th>Permisible reducir</th><th>Rango válido (min–max)</th></tr></thead>
+        <tbody>
+          <tr><td>Carne de res</td><td class="num">2,000 g</td><td class="num hl">S/0.227/g</td><td class="num">2,000 g</td><td class="num">3,362.5 g</td><td class="num">1,450 g</td><td class="num">550 – 5,362.5 g</td></tr>
+          <tr><td>Pan de hamburguesa</td><td class="num">11.59 unid.</td><td class="num">S/0.00</td><td class="num">200 unid.</td><td class="num">sin límite</td><td class="num">188.41 unid.</td><td class="num">11.59 – sin límite</td></tr>
+          <tr><td>Papas crudas</td><td class="num">1,000 g</td><td class="num">S/0.00</td><td class="num">1,800 g</td><td class="num">sin límite</td><td class="num">800 g</td><td class="num">1,000 – sin límite</td></tr>
+          <tr><td>Capacidad de freidoras</td><td class="num">480 min</td><td class="num hl">S/13.00/min</td><td class="num">480 min</td><td class="num">122.27 min</td><td class="num">465 min</td><td class="num">15 – 602.27 min</td></tr>
+          <tr><td>Horas-hombre en cocina</td><td class="num">448.30 min</td><td class="num">S/0.00</td><td class="num">540 min</td><td class="num">sin límite</td><td class="num">91.70 min</td><td class="num">448.30 – sin límite</td></tr>
+          <tr><td>Combo Hot Dog (demanda)</td><td class="num">100 unid.</td><td class="num hl">S/3.00/unid.</td><td class="num">100 unid.</td><td class="num">305.68 unid.</td><td class="num">100 unid.</td><td class="num">0 – 405.68 unid.</td></tr>
+          <tr><td>Mínimo Hamb. Clásica (acta)</td><td class="num">5 unid.</td><td class="num hl">−S/5.00/unid.</td><td class="num">5 unid.</td><td class="num">13.18 unid.</td><td class="num">5 unid.</td><td class="num">0 – 18.18 unid.</td></tr>
+          <tr><td>Mínimo Papas Fritas (acta)</td><td class="num">5 unid.</td><td class="num hl">−S/29.00/unid.</td><td class="num">5 unid.</td><td class="num">4 unid.</td><td class="num">5 unid.</td><td class="num">0 – 9 unid.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="subhead reveal"><span class="sn">01</span><h3>Sensibilidad de variables y restricciones (rangos mín-máx)</h3></div>
+    <p class="body-text reveal">Estos rangos dicen hasta dónde puede moverse un dato del modelo sin que la mezcla óptima cambie de estructura.</p>
+
+    <p class="body-text reveal" style="margin-top:22px;"><strong>En las variables (cuánto puede variar la utilidad de cada producto):</strong></p>
+    <ul class="plain reveal">
+      <li>Hamburguesa Clásica: puede bajar sin límite, pero si su margen sube de S/20/unid. a más de S/25/unid., dejaría de tener sentido producir solo el mínimo acordado — convendría producir más.</li>
+      <li>Hamburguesa Doble Queso: aguanta bajar hasta S/40/unid. (hoy S/50/unid.) sin que cambie nada; puede subir sin límite.</li>
+      <li>Papas Fritas: igual que la clásica, si su margen sube de S/10/unid. a más de S/39/unid., dejaría de ser "la carga" del menú y el modelo empezaría a producir más por sí solo.</li>
+      <li>Combo Hot Dog: su margen podría caer hasta S/0/unid. sin alterar la solución (está limitado por la demanda, no por su rentabilidad).</li>
+      <li>Nuggets de Pollo: aguanta bajar hasta S/13.33/unid. sin cambiar la mezcla.</li>
+    </ul>
+
+    <p class="body-text reveal" style="margin-top:28px;"><strong>En las restricciones (cuánto puede variar la disponibilidad de cada recurso):</strong></p>
+    <ul class="plain reveal">
+      <li>Carne de res: entre 550 g y 5,362.5 g (hoy 2,000 g) — bastante margen de maniobra.</li>
+      <li>Capacidad de freidoras: entre 15 min y 602.27 min (hoy 480 min) — aquí el techo está más cerca; solo hay 122 min de margen antes de que el modelo cambie de estructura.</li>
+      <li>Combo Hot Dog (demanda): entre 0 y 405.68 unid. (hoy 100 unid.) — hay mucho espacio para crecer en ventas antes de que este límite deje de ser el que manda.</li>
+      <li>Mínimo de Papas Fritas: entre 0 y solo 9 unid. (hoy 5 unid.). Este es el rango más angosto de todo el informe: si Comercial quisiera subir el mínimo de papas por encima de 9 unid. al día, ya no alcanzarían los recursos actuales sin volver a rediseñar el modelo.</li>
+      <li>Mínimo de Hamburguesa Clásica: entre 0 y 18.18 unid. (hoy 5 unid.) — aquí sí hay más margen para negociar un mínimo más alto si Comercial lo pide.</li>
+    </ul>
+
+    <div class="subhead reveal"><span class="sn">02</span><h3>Costo reducido</h3></div>
+    <p class="body-text reveal">Aquí está el cambio más interesante entre el Modelo 1 y el Modelo 2: todas las variables ahora tienen costo reducido = S/0.00.</p>
+    <p class="body-text reveal" style="margin-top:14px;">Esto no significa que el costo de producir Hamburguesa Clásica y Papas Fritas haya desaparecido — se movió de lugar. En el Modelo 1, ese costo aparecía como costo reducido de la variable (−S/5/unid. y −S/29/unid.). En el Modelo 2, como ahora existen las restricciones "Mínimo Hamburguesa Clásica" y "Mínimo Papas Fritas", el costo de producir esas unidades se refleja como el precio sombra de esas dos restricciones, que es exactamente −S/5/unid. y −S/29/unid. — los mismos números de antes, solo que ahora viven en la sección de restricciones, no en la de variables.</p>
+
+    <div class="subhead reveal"><span class="sn">03</span><h3>Precio sombra</h3></div>
+    <ul class="plain reveal">
+      <li>Carne de res: S/0.227/g (≈ S/227/kg). Cada gramo extra de carne conseguido sigue valiendo lo mismo que en el Modelo 1.</li>
+      <li>Capacidad de freidoras: S/13.00/min. Sigue siendo el recurso más valioso del modelo — ninguna otra restricción activa vale tanto por unidad.</li>
+      <li>Combo Hot Dog (demanda): S/3.00/unid. Cada combo adicional que el mercado compre sigue sumando S/3 de ganancia.</li>
+      <li>Mínimo Hamburguesa Clásica: −S/5.00/unid. Cada unidad que se exige producir por encima de 0 (su óptimo natural) le cuesta S/5 a la ganancia.</li>
+      <li>Mínimo Papas Fritas: −S/29.00/unid. Es, de lejos, el costo más alto de todo el acuerdo: cada porción de papas que el Acta obliga a producir le cuesta S/29 a Wokkoi.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ DIVIDER: PROVEEDOR A EMPRESA ============ -->
+<section class="divider" id="logistica">
+  <div class="divider-photo">
+    <svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="120" cy="178" rx="90" ry="8" fill="#000" opacity="0.25"/>
+      <rect x="28" y="88" width="112" height="62" rx="8" fill="var(--bun)"/>
+      <rect x="140" y="104" width="56" height="46" rx="6" fill="var(--bun-deep)"/>
+      <rect x="150" y="112" width="32" height="20" rx="3" fill="var(--panel-2)"/>
+      <rect x="40" y="100" width="32" height="10" fill="var(--cheese)" opacity="0.85"/>
+      <rect x="40" y="116" width="32" height="10" fill="var(--lettuce)" opacity="0.85"/>
+      <circle cx="72" cy="156" r="17" fill="var(--meat)"/>
+      <circle cx="72" cy="156" r="7" fill="var(--panel-2)"/>
+      <circle cx="166" cy="156" r="17" fill="var(--meat)"/>
+      <circle cx="166" cy="156" r="7" fill="var(--panel-2)"/>
+    </svg>
+  </div>
+  <svg class="drip drip-top" viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill="#1a1713" d="M0,0 H1440 V14 C1400,44 1360,8 1320,32 C1280,50 1240,12 1200,30 C1160,46 1120,10 1080,26 C1040,40 1000,14 960,24 C920,32 880,6 840,22 C800,36 760,12 720,20 C680,26 640,4 600,18 C560,30 520,8 480,20 C440,30 400,6 360,16 C320,24 280,4 240,14 C200,22 160,6 120,16 C80,24 40,4 0,12 Z"/>
+  </svg>
+  <h2>Proveedor a empresa</h2>
+  <p class="sub">Cobertura geográfica: cómo llega la carne de los proveedores a las seis sucursales de Huancayo.</p>
+</section>
+
+<!-- ============ COBERTURA GEOGRÁFICA / LOGÍSTICA ============ -->
+<section class="sec sec-alt">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-index">13 — Cobertura geográfica</div>
+      <div>
+        <h2>Modelo de transporte: proveedor → empresa</h2>
+        <p class="lede">Wokkoi no compra toda su carne de un solo proveedor ni abastece un solo local: el modelo de transporte decide qué proveedor surte a cada sucursal de Huancayo al menor costo de flete posible.</p>
+      </div>
+    </div>
+
+    <span class="tbl-tag green"><span class="dot"></span>Costos de transporte (S/ por unidad)</span>
+    <div class="tbl-wrap reveal">
+      <table>
+        <thead><tr><th>Proveedor</th><th>Centro</th><th>El Tambo</th><th>San Carlos</th><th>Chilca</th><th>Cajas</th><th>Justicia</th></tr></thead>
+        <tbody>
+          <tr><td>Carnes Premium Huancayo</td><td class="num">S/18</td><td class="num">S/15</td><td class="num">S/35</td><td class="num">S/28</td><td class="num">S/20</td><td class="num">S/42</td></tr>
+          <tr><td>Distribuidora Andina de Alimentos</td><td class="num">S/30</td><td class="num">S/22</td><td class="num">S/18</td><td class="num">S/15</td><td class="num">S/25</td><td class="num">S/20</td></tr>
+          <tr><td>AgroFresh Junín</td><td class="num">S/45</td><td class="num">S/38</td><td class="num">S/22</td><td class="num">S/18</td><td class="num">S/16</td><td class="num">S/28</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <span class="tbl-tag green" style="display:block;margin-top:40px;"><span class="dot"></span>Unidades asignadas por semana (1 unid. = 200 g)</span>
+    <div class="tbl-wrap reveal">
+      <table>
+        <thead><tr><th>Proveedor</th><th>Centro</th><th>El Tambo</th><th>San Carlos</th><th>Chilca</th><th>Cajas</th><th>Justicia</th><th>Oferta semanal</th></tr></thead>
+        <tbody>
+          <tr><td>Frigorífico La Victoria S.A.C.</td><td class="num">7</td><td class="num">9</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num hl">18 unid.</td></tr>
+          <tr><td>Distribuidora de Carnes del Norte S.A.</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">9</td><td class="num hl">10 unid.</td></tr>
+          <tr><td>Carnes Premium del Sur S.A.C.</td><td class="num">0</td><td class="num">0</td><td class="num">4</td><td class="num">2</td><td class="num">6</td><td class="num">0</td><td class="num hl">12 unid.</td></tr>
+          <tr><td>Demanda real (suma de columna)</td><td class="num">7 unid.</td><td class="num">9 unid.</td><td class="num">5 unid.</td><td class="num">2 unid.</td><td class="num">8 unid.</td><td class="num">9 unid.</td><td class="num">40 unid.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note-box reveal">Las tres filas de proveedores aquí (Frigorífico La Victoria, Distribuidora de Carnes del Norte, Carnes Premium del Sur) no coinciden en nombre con los tres proveedores de la tabla de costos (Carnes Premium Huancayo, Distribuidora Andina, AgroFresh Junín): es una inconsistencia real de la hoja de cálculo original, que señalamos en el análisis de abajo en vez de ocultarla.</div>
+
+    <div class="stat-row reveal">
+      <div class="stat"><span class="num">S/ 719.00</span><span class="lbl">Costo mínimo de transporte / semana</span></div>
+      <div class="stat"><span class="num">40 unid.</span><span class="lbl">Carne movida por semana (8 kg en formato de 200 g)</span></div>
+      <div class="stat"><span class="num">3 → 6</span><span class="lbl">Proveedores que abastecen 6 sucursales</span></div>
+    </div>
+
+    <div class="subhead reveal"><span class="sn">Función objetivo</span><h3>Costo mínimo de transporte: S/719.00/semana</h3></div>
+    <p class="body-text reveal">La ruta que mueve la cantidad mínima —Distribuidora Andina de Alimentos → San Carlos = 1 unid.— cuesta S/18/unid. el viaje. Ahí está el punto del ejemplo: pagar un flete de S/18 para llevar apenas 1 unidad (200 g) de carne es un costo logístico altísimo por unidad (S/18/200g, ≈S/90/kg solo en transporte), mientras que esa misma ruta hacia Justicia mueve 9 unidades por un flete de S/20 (apenas S/2.22/unid.). Por eso conviene agrupar la entrega a San Carlos con otra ruta cercana o pasarla a reparto semanal, en vez de mandar un viaje exclusivo por 1 unidad.</p>
+
+    <div class="subhead reveal"><span class="sn">Análisis</span><h3>Lectura completa del modelo de transporte</h3></div>
+    <p class="body-text reveal">El modelo de transporte de carne en Huancayo optimiza la distribución de 40 unidades logísticas (equivalentes a 8 kg en formato de 200 g) entre tres proveedores y seis sucursales (Centro, El Tambo, San Carlos, Chilca, Cajas y Justicia), logrando un costo mínimo total de S/719.00 semanales. Si bien la asignación aprovecha rutas de flete bajo como El Tambo (S/15/unid.) y Cajas (S/16/unid.), la sucursal de San Carlos representa un punto ineficiente al requerir un viaje exclusivo de 1 unid. a S/18/unid. y tarifas de hasta S/22/unid. Para mitigar este sobrecosto, se recomienda rediseñar la red logística en tres macrorrutas (Norte, Sur y Este), negociar un descuento por volumen hacia la sucursal de Justicia (reduciendo el flete de S/20 a S/18) y unificar los envíos a San Carlos, lo que generará un ahorro estimado de S/72 a S/108 semanales; asimismo, es imprescindible corregir en la hoja de cálculo la inconsistencia entre los nombres de los proveedores y actualizar los parámetros de oferta (18, 10, 12 unid.) y demanda (7, 9, 5, 2, 8, 9 unid.).</p>
+  </div>
+</section>
+
+<!-- ============ RECOMENDACIONES DE SENSIBILIDAD Y LOGÍSTICA ============ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-index">14 — Toma de decisiones</div>
+      <div>
+        <h2>Recomendaciones de sensibilidad y logística</h2>
+        <p class="lede">Con el informe de sensibilidad y el modelo de transporte en mano, esto es lo que proponemos para la siguiente etapa.</p>
+      </div>
+    </div>
+    <div class="reco-grid reveal">
+      <div class="reco">
+        <span class="rn">01</span>
+        <p>Mover el camión para llevar solo 1 unidad de carne a San Carlos cuesta mucho dinero. En vez de mandar el camión solo por ese paquete, conviene juntarlo con las entregas a sucursales vecinas o mandarlo cada dos semanas: así se ahorran hasta S/18 a la semana.</p>
+      </div>
+      <div class="reco">
+        <span class="rn">02</span>
+        <p>Dado que la carne de res es un recurso totalmente agotado en el proceso productivo, su precio sombra (S/0.227/g) representa el margen de utilidad incremental que la empresa puede obtener: por cada gramo adicional adquirido, la utilidad total aumenta en S/0.227 al destinarlo a Hamburguesa Doble Queso. La decisión más conveniente es reasignar el presupuesto inmovilizado en insumos con holgura (como el pan) hacia la compra de mayor volumen de carne de res, siempre que el costo de ese gramo adicional sea menor a S/0.227/g.</p>
+      </div>
+      <div class="reco">
+        <span class="rn">03</span>
+        <p>Proponer a la dirección comercial reducir la cuota obligatoria de Papas Fritas o venderlas únicamente integradas en combos de alto margen, porque producir cada porción obligatoria adicional reduce la utilidad neta global en S/29.00/unid. (precio sombra = −S/29.00). Esto ocurre porque las papas consumen tiempo de freidora (3 min/porción) que le resta capacidad a la producción de Nuggets de Pollo (que aportan S/52.00/caja).</p>
+      </div>
+      <div class="reco">
+        <span class="rn">04</span>
+        <p>No contratar personal adicional en cocina. Es más conveniente reorganizar al equipo disponible para apoyar en tareas de pre-elaboración o empaquetado, o capacitarlo para operar una segunda freidora si se adquiere, porque actualmente se usan 448.30 de los 540 min disponibles de personal en cocina (quedan 91.70 min libres).</p>
+      </div>
+      <div class="reco">
+        <span class="rn">05</span>
+        <p>Llenar el cupo del Combo Hot Dog mediante promociones comerciales o delivery en zonas estratégicas: incrementar la demanda permitida aportará S/3.00/unid. netos adicionales sobre el límite actual, porque la demanda máxima está topada en 100 unid. (se consume el 100% del límite estimado) con un precio sombra de S/3.00/unid. por cada unidad adicional que se logre vender.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="footer-photo">
+    <svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="24" y="88" width="192" height="52" rx="26" fill="var(--bun)"/>
+      <rect x="38" y="80" width="164" height="36" rx="18" fill="var(--sausage)"/>
+      <path d="M52,88 Q66,74 80,88 Q94,102 108,88 Q122,74 136,88 Q150,102 164,88 Q178,74 190,88" fill="none" stroke="var(--cheese)" stroke-width="7" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <svg class="drip drip-top" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill="#1c1712" d="M0,0 H1440 V18 C1400,55 1360,10 1320,40 C1290,60 1260,15 1220,38 C1180,58 1140,12 1100,42 C1060,62 1020,18 980,10 C940,4 900,50 860,30 C820,12 780,48 740,20 C700,4 660,42 620,36 C580,30 540,8 500,32 C460,54 420,14 380,26 C340,36 300,4 260,20 C220,34 180,10 140,28 C100,44 60,8 20,22 C10,26 4,18 0,18 Z"/>
+  </svg>
+  <div class="wrap footer-inner">
+    <h2>¡Muchas gracias!</h2>
+    <p class="sub">Sabor y sazón Wokkoi</p>
+    <div class="footer-meta">
+      <span>Curso: Investigación Operativa</span>
+      <span>Modelo de Programación Lineal</span>
+      <span>Comida rápida</span>
+    </div>
+    <div class="footer-bottom wrap" style="padding:0;">
+      <span>Cuya de la Cruz · Cóndor Rojas · Ramos Huamán · García Quijada</span>
+      <span>Wokkoi — Modelo 2, acuerdo de la Acta de Enfoque</span>
+    </div>
+  </div>
+</footer>
+
+<a href="#" class="back-top" id="backTop" aria-label="Volver arriba">↑</a>
+
+<script>
+  // loading transition: show for a minimum time, then fade out once the page is ready
+  (function(){
+    const loader = document.getElementById('loader');
+    if(!loader) return;
+    const minTime = new Promise(res => setTimeout(res, 1300));
+    const ready = new Promise(res => {
+      if(document.readyState === 'complete') return res();
+      window.addEventListener('load', res, { once:true });
+    });
+    Promise.all([minTime, ready]).then(() => {
+      loader.classList.add('hide');
+      setTimeout(() => loader.remove(), 700);
+    });
+  })();
+
+  // nav background on scroll
+  const nav = document.getElementById('siteNav');
+  const backTop = document.getElementById('backTop');
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    nav.classList.toggle('scrolled', y > 40);
+    backTop.classList.toggle('show', y > 700);
+  });
+
+  // reveal on scroll (only hide content once we know JS + IntersectionObserver work)
+  if('IntersectionObserver' in window){
+    document.documentElement.classList.add('js-anim');
+    const revealEls = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if(e.isIntersecting){
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => io.observe(el));
+  }
+
+  const chart = document.getElementById('compareChart');
+  const barIo = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){
+        chart.querySelectorAll('.bar-fill').forEach(bar => {
+          bar.style.width = bar.dataset.w;
+        });
+        barIo.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  if(chart) barIo.observe(chart);
+</script>
+
+</body>
+</html>
+
+ 
